@@ -1,8 +1,12 @@
 import { createServer } from "node:http"
 import { parse } from "url"
 import fs from "fs/promises"
+import path from "path"
 
 const PORT = 4_000
+
+const todosPath = path.join( "data", "todos.json" )
+const postsPath = path.join( "data", "posts.json" )
 
 const server = createServer( async ( req, res ) => {
 
@@ -14,14 +18,14 @@ const server = createServer( async ( req, res ) => {
 
 		if ( pathname === "/todos" ) {
 
-			const jsonText = await fs.readFile( "./todos.json", "utf-8" )
+			const jsonText = await fs.readFile( todosPath, "utf-8" )
 
 			res.end( jsonText )
 			return
 		}
 		else if ( pathname === "/posts" ) {
 
-			const jsonText = await fs.readFile( "./posts.json", "utf-8" )
+			const jsonText = await fs.readFile( postsPath, "utf-8" )
 			res.end( jsonText )
 			return
 		}
@@ -30,7 +34,7 @@ const server = createServer( async ( req, res ) => {
 
 		const { query } = parse( req.url, true )
 
-		const jsonText = await fs.readFile( "./posts.json", "utf-8" )
+		const jsonText = await fs.readFile( postsPath, "utf-8" )
 		const data = JSON.parse( jsonText )
 
 		const post = {
@@ -40,7 +44,7 @@ const server = createServer( async ( req, res ) => {
 
 		data.push( post )
 
-		await fs.writeFile( "./posts.json", JSON.stringify( data, null, "\t" ) )
+		await fs.writeFile( postsPath, JSON.stringify( data, null, "\t" ) )
 
 		res.writeHead( 201, { "Content-Type": "application/json" } )
 		res.end( JSON.stringify( { message: "POST: OK" } ) )
