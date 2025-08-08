@@ -8,22 +8,48 @@ const server = createServer( async ( req, res ) => {
 
 	const { pathname } = parse( req.url )
 
-	res.writeHead( 200, { "Content-Type": "application/json" } )
+	if ( req.method === "GET" ) {
 
-	if ( pathname === "/todos" ) {
+		res.writeHead( 200, { "Content-Type": "application/json" } )
 
-		const jsonText = await fs.readFile( "./todos.json", "utf-8" )
+		if ( pathname === "/todos" ) {
 
-		res.end( jsonText )
+			const jsonText = await fs.readFile( "./todos.json", "utf-8" )
 
-		return
+			res.end( jsonText )
+			return
+		}
+		else if ( pathname === "/posts" ) {
+
+			const jsonText = await fs.readFile( "./posts.json", "utf-8" )
+			res.end( jsonText )
+			return
+		}
 	}
-	else if ( pathname === "/posts" ) {
+	else if ( req.method === "POST" ) {
+
+		const { query } = parse( req.url, true )
 
 		const jsonText = await fs.readFile( "./posts.json", "utf-8" )
+		const data = JSON.parse( jsonText )
 
-		res.end( jsonText )
+		const post = {
+			id: data.length + 1,
+			title: query.title,
+		}
 
+		data.push( post )
+
+		await fs.writeFile( "./posts.json", JSON.stringify( data, null, "\t" ) )
+
+		res.writeHead( 201, { "Content-Type": "application/json" } )
+		res.end( JSON.stringify( { message: "POST: OK" } ) )
+		return
+	}
+	else {
+
+		res.writeHead( 405, { "Content-Type": "text/plain" } )
+		res.end( "" )
 		return
 	}
 
